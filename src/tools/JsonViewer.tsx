@@ -320,13 +320,6 @@ const JsonViewer: React.FC = () => {
 
   return (
     <div className="h-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">JSON 查看器</h1>
-        <p className="mt-1 text-muted-foreground">
-          格式化、验证和编辑 JSON 数据
-        </p>
-      </div>
-
       {/* 工具栏 */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button

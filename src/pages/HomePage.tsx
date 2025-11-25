@@ -59,70 +59,39 @@ const tools = [
 ]
 
 const HomePage: React.FC = () => {
-  const categories = Array.from(new Set(tools.map(tool => tool.category)))
+  const availableTools = tools.filter(tool => tool.available)
+  const categories = Array.from(new Set(availableTools.map(tool => tool.category)))
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Handy Tools</h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          收集各种实用的小工具，让工作和生活更便捷
-        </p>
-      </div>
 
       {categories.map(category => (
         <div key={category}>
           <h2 className="text-xl font-semibold text-foreground mb-4">{category}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tools
+            {availableTools
               .filter(tool => tool.category === category)
               .map((tool) => {
                 const Icon = tool.icon
-                const isAvailable = tool.available
-
-                if (isAvailable) {
-                  return (
-                    <Link
-                      key={tool.id}
-                      to={tool.path}
-                      className="block p-6 bg-card border rounded-lg hover:bg-accent hover:border-primary transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Icon className="w-8 h-8 text-primary" />
-                        <div>
-                          <h3 className="text-lg font-medium text-card-foreground">
-                            {tool.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {tool.description}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                } else {
-                  return (
-                    <div
-                      key={tool.id}
-                      className="p-6 bg-muted/30 border border-dashed rounded-lg opacity-60"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Icon className="w-8 h-8 text-muted-foreground" />
-                        <div>
-                          <h3 className="text-lg font-medium text-muted-foreground">
-                            {tool.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {tool.description}
-                          </p>
-                          <span className="inline-block mt-2 text-xs bg-muted px-2 py-1 rounded">
-                            即将上线
-                          </span>
-                        </div>
+                return (
+                  <Link
+                    key={tool.id}
+                    to={tool.path}
+                    className="block p-6 bg-card border rounded-lg hover:bg-accent hover:border-primary transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Icon className="w-8 h-8 text-primary" />
+                      <div>
+                        <h3 className="text-lg font-medium text-card-foreground">
+                          {tool.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {tool.description}
+                        </p>
                       </div>
                     </div>
-                  )
-                }
+                  </Link>
+                )
               })}
           </div>
         </div>
