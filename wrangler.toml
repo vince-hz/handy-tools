@@ -6,8 +6,3 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "./dist"
 binding = "ASSETS"
-
-# 静态资源处理
-[[routes]]
-pattern = "/*"
-zone_name = "your-subdomain.workers.dev"
