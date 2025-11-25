@@ -1,79 +1,10 @@
 # Handy Tools
 
-一个收集各种实用小工具的网站，使用 React + TypeScript + TailwindCSS 构建，部署在 Cloudflare Pages。
+一个收集各种实用小工具的网站，支持深色模式切换，数据本地保存，完全响应式设计。
 
-## 功能特点
+## 工具
 
-- 🌙 深色/浅色模式切换
-- 💾 本地数据保存
-- 📱 完全响应式设计
-- ⚡ 极速加载（Vite 构建）
-- 🔧 工具模块化，易扩展
-
-## 已实现的工具
-
-- **JSON 查看器** - 格式化、验证和编辑 JSON 数据
-  - 左右分屏显示
-  - 树形结构展示
-  - 支持展开/折叠
-  - 编辑模式可直接修改结构
-  - 格式化/压缩功能
-  - 本地存储
-
-## 技术栈
-
-- **前端**: React 18 + TypeScript
-- **构建工具**: Vite
-- **样式**: TailwindCSS
-- **路由**: React Router
-- **图标**: Lucide React
-- **部署**: Cloudflare Pages
-
-## 本地开发
-
-```bash
-# 安装依赖
-pnpm install
-
-# 启动开发服务器
-pnpm dev
-
-# 构建生产版本
-pnpm build
-
-# 预览生产版本
-pnpm preview
-```
-
-## 项目结构
-
-```
-src/
-├── components/     # 通用组件
-│   └── Layout.tsx  # 主布局组件
-├── tools/          # 各种工具页面
-│   └── JsonViewer.tsx
-├── pages/          # 主要页面
-│   └── HomePage.tsx
-├── hooks/          # 自定义 hooks
-│   └── useTheme.tsx
-├── utils/          # 工具函数
-└── styles/         # 样式文件
-```
-
-## 部署到 Cloudflare Pages
-
-1. 连接 GitHub 仓库到 Cloudflare Pages
-2. 构建设置：
-   - 构建命令: `pnpm build`
-   - 输出目录: `dist`
-3. 自动部署完成
-
-## 添加新工具
-
-1. 在 `src/tools/` 目录下创建新的工具组件
-2. 在 `src/App.tsx` 中添加路由
-3. 在 `src/pages/HomePage.tsx` 中添加工具卡片
+- **JSON 查看器** - 格式化、验证和编辑 JSON 数据，支持树形结构展示和实时编辑
 
 ## License
 

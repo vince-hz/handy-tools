@@ -1,113 +1,42 @@
-import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
-
 /**
- * The DEBUG flag will do two things that help during development:
- * 1. we will skip caching on the edge, which makes it easier to
- *    debug.
- * 2. we will return an error message on exception in your Response rather
- *    than the default 404.html page.
+ * Handle SPA routing for Cloudflare Workers with assets binding
  */
-const DEBUG = false
-
 addEventListener('fetch', event => {
-  try {
-    event.respondWith(handleEvent(event))
-  } catch (e) {
-    if (DEBUG) {
-      return event.respondWith(
-        new Response(e.message || e.toString(), {
-          status: 500,
-        }),
-      )
-    }
-    event.respondWith(new Response('Internal Error', { status: 500 }))
-  }
+  event.respondWith(handleEvent(event))
 })
 
 async function handleEvent(event) {
-  let options = {}
-
-  /**
-   * You can add custom logic to how we fetch your assets
-   * by configuring the function `mapRequestToAsset`
-   */
-  // Handle both /docs prefix and SPA routing
-  options.mapRequestToAsset = request => handlePrefix(/^\/docs/)(handleSPA(request))
+  const url = new URL(event.request.url)
+  const pathname = url.pathname
 
   try {
-    if (DEBUG) {
-      // customize caching
-      options.cacheControl = {
-        bypassCache: true,
+    // Get the asset from the ASSETS binding (configured in wrangler.toml)
+    const env = event.request.env || globalThis
+    const assets = env.ASSETS
+
+    // Handle static assets (files with extensions)
+    if (pathname.includes('.')) {
+      const response = await assets.fetch(event.request)
+      if (response.ok) {
+        return response
       }
     }
 
-    const page = await getAssetFromKV(event, options)
+    // Handle SPA routing - serve index.html for all other routes
+    const indexRequest = new Request(`${url.origin}/index.html`, {
+      method: event.request.method,
+      headers: event.request.headers,
+    })
+    const response = await assets.fetch(indexRequest)
 
-    // allow headers to be altered
-    const response = new Response(page.body, page)
-
-    response.headers.set('X-XSS-Protection', '1; mode=block')
-    response.headers.set('X-Content-Type-Options', 'nosniff')
-    response.headers.set('X-Frame-Options', 'DENY')
-    response.headers.set('Referrer-Policy', 'unsafe-url')
-    response.headers.set('Feature-Policy', 'none')
-
-    return response
-
-  } catch (e) {
-    // if an error is thrown try to serve the asset at 404.html
-    if (!DEBUG) {
-      try {
-        let notFoundResponse = await getAssetFromKV(event, {
-          mapRequestToAsset: req => new Request(`${new URL(req.url).origin}/404.html`, req),
-        })
-
-        return new Response(notFoundResponse.body, { ...notFoundResponse, status: 404 })
-      } catch (e) {}
+    if (response.ok) {
+      return response
     }
 
-    return new Response(e.message || e.toString(), { status: 500 })
-  }
-}
+    // If index.html not found, return 404
+    return new Response('Not Found', { status: 404 })
 
-/**
- * Handle SPA routing - for any request that's not a static file,
- * serve index.html so React Router can handle the routing
- */
-function handleSPA(request) {
-  const url = new URL(request.url)
-
-  // If the request is for a static asset (has file extension), return as-is
-  if (url.pathname.includes('.')) {
-    return mapRequestToAsset(request)
-  }
-
-  // Otherwise, serve index.html for client-side routing
-  const defaultAssetKey = mapRequestToAsset(request)
-  const indexUrl = new URL(defaultAssetKey.url)
-  indexUrl.pathname = '/index.html'
-
-  return new Request(indexUrl.toString(), defaultAssetKey)
-}
-
-/**
- * Here's one example of how to modify a request to
- * remove a specific prefix, in this case `/docs` from
- * the url. This can be useful if you are deploying to a
- * route on a zone, or if you only want your static content
- * to exist at a specific path.
- */
-function handlePrefix(prefix) {
-  return request => {
-    // compute the default (e.g. / -> index.html)
-    let defaultAssetKey = mapRequestToAsset(request)
-    let url = new URL(defaultAssetKey.url)
-
-    // strip the prefix from the path for lookup
-    url.pathname = url.pathname.replace(prefix, '/')
-
-    // inherit all other props from the default request
-    return new Request(url.toString(), defaultAssetKey)
+  } catch (e) {
+    return new Response('Internal Error', { status: 500 })
   }
 }
