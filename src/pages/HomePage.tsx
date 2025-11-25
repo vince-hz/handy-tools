@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { Code2, Calculator, Palette, FileText, Hash, Lock } from 'lucide-react'
 
