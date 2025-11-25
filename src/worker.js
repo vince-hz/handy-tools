@@ -25,14 +25,14 @@ addEventListener('fetch', event => {
 })
 
 async function handleEvent(event) {
-  const url = new URL(event.request.url)
   let options = {}
 
   /**
    * You can add custom logic to how we fetch your assets
    * by configuring the function `mapRequestToAsset`
    */
-  options.mapRequestToAsset = handlePrefix(/^\/docs/)
+  // Handle both /docs prefix and SPA routing
+  options.mapRequestToAsset = request => handlePrefix(/^\/docs/)(handleSPA(request))
 
   try {
     if (DEBUG) {
@@ -69,6 +69,26 @@ async function handleEvent(event) {
 
     return new Response(e.message || e.toString(), { status: 500 })
   }
+}
+
+/**
+ * Handle SPA routing - for any request that's not a static file,
+ * serve index.html so React Router can handle the routing
+ */
+function handleSPA(request) {
+  const url = new URL(request.url)
+
+  // If the request is for a static asset (has file extension), return as-is
+  if (url.pathname.includes('.')) {
+    return mapRequestToAsset(request)
+  }
+
+  // Otherwise, serve index.html for client-side routing
+  const defaultAssetKey = mapRequestToAsset(request)
+  const indexUrl = new URL(defaultAssetKey.url)
+  indexUrl.pathname = '/index.html'
+
+  return new Request(indexUrl.toString(), defaultAssetKey)
 }
 
 /**
