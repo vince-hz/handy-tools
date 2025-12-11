@@ -186,6 +186,31 @@ const JsonViewer: React.FC = () => {
   const [editMode, setEditMode] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  const removeEscapes = (value: string) => {
+    return value.replace(/\\(u[0-9a-fA-F]{4}|["\\/bfnrt])/g, (_, seq) => {
+      switch (seq) {
+        case '"':
+          return '"'
+        case '\\':
+          return '\\'
+        case '/':
+          return '/'
+        case 'b':
+          return '\b'
+        case 'f':
+          return '\f'
+        case 'n':
+          return '\n'
+        case 'r':
+          return '\r'
+        case 't':
+          return '\t'
+        default:
+          return String.fromCharCode(parseInt(seq.slice(1), 16))
+      }
+    })
+  }
+
   // 从 localStorage 加载数据
   useEffect(() => {
     const savedData = localStorage.getItem('json-viewer-data')
@@ -238,6 +263,24 @@ const JsonViewer: React.FC = () => {
       saveToLocalStorage(compressed)
     } catch (err) {
       setError('无法压缩：JSON 格式无效')
+    }
+  }
+
+  const addEscapes = () => {
+    const escaped = JSON.stringify(jsonInput).slice(1, -1)
+    setJsonInput(escaped)
+    saveToLocalStorage(escaped)
+    setError('')
+  }
+
+  const removeJsonEscapes = () => {
+    try {
+      const cleaned = removeEscapes(jsonInput.trim().replace(/^"(.*)"$/, '$1'))
+      setJsonInput(cleaned)
+      saveToLocalStorage(cleaned)
+      setError('')
+    } catch (err) {
+      setError('无法去除转义：输入格式无效')
     }
   }
 
@@ -335,6 +378,18 @@ const JsonViewer: React.FC = () => {
           className="px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           压缩
+        </button>
+        <button
+          onClick={addEscapes}
+          className="px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+        >
+          添加转义
+        </button>
+        <button
+          onClick={removeJsonEscapes}
+          className="px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+        >
+          去除转义
         </button>
         <button
           onClick={copyToClipboard}
